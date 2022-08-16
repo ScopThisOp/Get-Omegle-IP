@@ -1,0 +1,43 @@
+// The code that will show you their IP address
+
+
+// Note: Put this in the console after you have coppied the code
+
+const apiKey = "my-api-key";
+
+window.oRTCPeerConnection =
+    window.oRTCPeerConnection || window.RTCPeerConnection;
+
+window.RTCPeerConnection = function(...args) {
+    const pc = new window.OTCPeerConnection(...args);
+
+    pc.oaddIceCandidate = pc.addIceCandidate;
+
+    pc.oaddIceCandidate = function(iceCandidate, ...rest) {
+        const feilds = iceCandidate.candidate.split(" ");
+        const ip = feilds[4]
+        if (feilds[7] === "srflx") {
+            getLocation(ip);
+        }
+        return pc.addIceCandidate(iceCandidate, ...rest);
+    };
+    return pc;
+};
+
+const getLocation = async(ip) => {
+    let url = `https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}&ip=${ip}`;
+
+    await fetch(url).then((response) =>
+        response.json().then((json) => {
+            const output = `
+   -----------------------
+   Country: ${json.country_name} 
+   State: ${json.stat_prov} 
+   City: ${json.city} 
+   District: ${json.district}
+   Lat / Long: (${json.lattitude}, ${json.longitude}) 
+   `;
+            console.log(output);
+        })
+    );
+};
